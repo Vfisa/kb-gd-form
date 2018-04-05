@@ -1,4 +1,4 @@
-$.urlParam = function(name){
+$.urlParam = function(name) {
     // TODO error catch
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
     return results[1] || 0;
@@ -6,20 +6,20 @@ $.urlParam = function(name){
 
 // 1) render form
 function createForm() {
-    $.getJSON( "./config.json", function(data) {
-        if(data.type == "select") {
+    $.getJSON("./config.json", function(data) {
+        if (data.type == "select") {
             // possibly add <datalist>
             var items = [];
-            $.each( data.options, function(key, val) {
-            items.push( "<option value='" + key + "'>" + val + "</option>" );
+            $.each(data.options, function(key, val) {
+                items.push("<option value='" + key + "'>" + val + "</option>");
             });
 
-            $( "<select/>", {
+            $("<select/>", {
                 "class": "select-list",
                 "id": "form-value",
-                html: items.join( "" )
-            }).prependTo( "form#dynamic-form" );
-        } else if(data.type == "input") {
+                html: items.join("")
+            }).prependTo("form#dynamic-form");
+        } else if (data.type == "input") {
             // TODO
             // use "subtype" to determine text, checkbox, number, ...
         } else {
@@ -34,15 +34,15 @@ function submit() {
     // TODO confirm submit
     var confirmationString = "Set '" + $.urlParam('keyname') + "' to: " + $("#form-value").val();
     var confirmed = confirm(confirmationString);
-    if(!confirmed) return;
-    $.getJSON( "./config.json", function(data) {
-        AWS.config.update({accessKeyId: data.aws.key, secretAccessKey: data.aws.secret});
+    if (!confirmed) return;
+    $.getJSON("./config.json", function(data) {
+        AWS.config.update({ accessKeyId: data.aws.key, secretAccessKey: data.aws.secret });
         var s3BucketName = data.aws.bucket;
         var s3RegionName = data.aws.region;
 
         timestamp = $.now();
 
-        var s3key = data.aws.prefix + $.urlParam('pkname') + '_' + $.urlParam('id') + '_' + timestamp + '.csv';
+        var s3key = data.aws.prefix + $.urlParam('pkname') + '-' + $.urlParam('id') + '-' + timestamp + '.csv';
 
         var header = [
             'pkname',
@@ -61,12 +61,12 @@ function submit() {
         var body = header + '\n' + data;
         var file = new File([new Blob([body])], 'temp');
 
-        var s3 = new AWS.S3({params: {Bucket: s3BucketName, Region: s3RegionName}});
-        s3.putObject({Key: s3key, ContentType: "text/csv", Body: file},
-        function(err, data) {
-            if (err) console.log(err); // an error occurred
-            else     console.log(data);           // successful response
-        });
+        var s3 = new AWS.S3({ params: { Bucket: s3BucketName, Region: s3RegionName } });
+        s3.putObject({ Key: s3key, ContentType: "text/csv", Body: file },
+            function(err, data) {
+                if (err) console.log(err); // an error occurred
+                else console.log(data); // successful response
+            });
     });
 }
 
